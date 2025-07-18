@@ -2,10 +2,10 @@
 -- T-SQL script to create tables, insert sample data and run report queries
 
 -- Drop existing objects if they exist
-IF OBJECT_ID('dbo.Application', 'U') IS NOT NULL DROP TABLE dbo.Application;
-IF OBJECT_ID('dbo.Vacancy', 'U') IS NOT NULL DROP TABLE dbo.Vacancy;
-IF OBJECT_ID('dbo.Candidate', 'U') IS NOT NULL DROP TABLE dbo.Candidate;
-IF OBJECT_ID('dbo.School', 'U') IS NOT NULL DROP TABLE dbo.School;
+DROP TABLE IF EXISTS dbo.Application;
+DROP TABLE IF EXISTS dbo.Vacancy;
+DROP TABLE IF EXISTS dbo.Candidate;
+DROP TABLE IF EXISTS dbo.School;
 GO
 
 -- Create table for schools
@@ -20,7 +20,7 @@ CREATE TABLE dbo.Candidate(
     CandidateID INT IDENTITY(1,1) PRIMARY KEY,
     FirstName NVARCHAR(50) NOT NULL,
     LastName NVARCHAR(50) NOT NULL,
-    Email NVARCHAR(100) NOT NULL,
+    Email NVARCHAR(100) NOT NULL UNIQUE,
     Phone NVARCHAR(20)
 );
 GO
@@ -32,6 +32,7 @@ CREATE TABLE dbo.Vacancy(
     Subject NVARCHAR(100) NOT NULL,
     StartDate DATE NOT NULL,
     Status NVARCHAR(20) NOT NULL,
+    CONSTRAINT CHK_Vacancy_Status CHECK (Status IN ('Open','Closed')),
     CONSTRAINT FK_Vacancy_School FOREIGN KEY (SchoolID) REFERENCES dbo.School(SchoolID)
 );
 GO
@@ -43,6 +44,8 @@ CREATE TABLE dbo.Application(
     VacancyID INT NOT NULL,
     ApplicationDate DATE NOT NULL,
     Status NVARCHAR(20) NOT NULL,
+    CONSTRAINT CHK_Application_Status CHECK (Status IN ('Pending','Interview','Hired')),
+    CONSTRAINT UQ_Application UNIQUE (CandidateID, VacancyID),
     CONSTRAINT FK_Application_Candidate FOREIGN KEY (CandidateID) REFERENCES dbo.Candidate(CandidateID),
     CONSTRAINT FK_Application_Vacancy FOREIGN KEY (VacancyID) REFERENCES dbo.Vacancy(VacancyID)
 );
